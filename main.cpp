@@ -1,9 +1,10 @@
-﻿#include<QFile>
+#include<QProcess>
 #include<QScreen>
 #include<QDebug>
-#include"../00CommonCode/commonfuncs.h"
 
 #include <QApplication>
+
+QString commandRun(QString &);
 
 int main(int argc, char *argv[])
 {
@@ -29,6 +30,20 @@ int main(int argc, char *argv[])
    QString actionID=a.arguments().at(1);
    if(""==actionID){return 1;};
    QString command="\"C:\\Program Files\\Quicker\\QuickerStarter.exe\" runaction:"+ actionID +"?"+ screensInfo +"\n";
-   CFuncs::commandRun(command);
+   commandRun(command);
    return 0;
+}
+
+QString commandRun(QString &command)
+{
+   QByteArray byteArray = command.toLocal8Bit();
+   QProcess process;
+
+   process.start("cmd.exe");
+   process.waitForStarted();
+   process.write(byteArray);
+   process.closeWriteChannel();
+   process.waitForFinished();
+
+   return  QString::fromLocal8Bit(process.readAll());
 }
