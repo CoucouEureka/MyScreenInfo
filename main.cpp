@@ -1,10 +1,9 @@
-#include<QProcess>
+#include<QFile>
 #include<QScreen>
 #include<QDebug>
-
 #include <QApplication>
 
-QString commandRun(QString &);
+void writeScreensInfo(QString &screensInfo);
 
 int main(int argc, char *argv[])
 {
@@ -20,30 +19,26 @@ int main(int argc, char *argv[])
       screen = screens.at(i);
       geometry = screen->geometry();
       screenNumber = i + 1;
-      screensInfo += "endlscreen"+ QString::number(screenNumber) + ":" + QString::number(screenNumber)
-            + "endlx" + QString::number(screenNumber) + ":" +QString::number( geometry.x())
-            + "endly" + QString::number(screenNumber) + ":" +QString::number( geometry.y())
-            + "endlwidth" + QString::number(screenNumber) + ":" +QString::number( geometry.width() )
-            + "endlheight" + QString::number(screenNumber) + ":" +QString::number( geometry.height() );
+      screensInfo += "\nscreen"+ QString::number(screenNumber) + ":" + QString::number(screenNumber)
+            + "\nx" + QString::number(screenNumber) + ":" +QString::number( geometry.x())
+            + "\ny" + QString::number(screenNumber) + ":" +QString::number( geometry.y())
+            + "\nwidth" + QString::number(screenNumber) + ":" +QString::number( geometry.width() )
+            + "\nheight" + QString::number(screenNumber) + ":" +QString::number( geometry.height() );
    }
 
-   QString actionID=a.arguments().at(1);
-   if(""==actionID){return 1;};
-   QString command="\"C:\\Program Files\\Quicker\\QuickerStarter.exe\" runaction:"+ actionID +"?"+ screensInfo +"\n";
-   commandRun(command);
+   writeScreensInfo(screensInfo);
    return 0;
 }
 
-QString commandRun(QString &command)
+void writeScreensInfo(QString &screensInfo)
 {
-   QByteArray byteArray = command.toLocal8Bit();
-   QProcess process;
+   QFile file("MyScreenInfo.txt");
+   if (file.exists()) { file.remove(); }
+   if (!file.open(QIODevice::WriteOnly | QIODevice::Text | QIODevice::Truncate)) {
+       qDebug() << "Failed to open file for writing.";
+   }
 
-   process.start("cmd.exe");
-   process.waitForStarted();
-   process.write(byteArray);
-   process.closeWriteChannel();
-   process.waitForFinished();
-
-   return  QString::fromLocal8Bit(process.readAll());
+   QTextStream out(&file);
+   out << screensInfo;
+   file.close();
 }
